@@ -9,6 +9,7 @@ TaskHandle_t Task2;
 #include <Wire.h>
 #include <SH1106.h>
 #include <SoftwareSerial.h>
+// hàm này dùng cho esp 8266 nhưng nó liên quan đến câu lệnh s.begin và s.string
 SoftwareSerial s(16, 13);
 
 int process = 0;
@@ -26,8 +27,9 @@ int time2 = 0;
 int hour = 0;
 int minute = 0;
 unsigned long period;
-
+// 2 chân 33 và 36 là chân SDA và SCL
 SH1106 display(0x3C, 33, 36);
+// chân D5 D6 tương ứng IO12 và IO14
 #define D5 14
 #define D6 12
 
@@ -73,16 +75,6 @@ void setup() {
     1);          /* pin task to core 1 */
 
 }
-
-
-
-
-
-
-
-
-
-
 
 //Task1code: blinks an LED every 1000 ms
 void graphics(int velo, String time2) {
@@ -227,23 +219,6 @@ void Task1code( void * pvParameters ) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //Task2code: blinks an LED every 700 ms
 void Task2code( void * pvParameters ) {
   Serial.print("Task2 running on core ");
@@ -280,8 +255,6 @@ void Task2code( void * pvParameters ) {
     }
   }
 
-
-  
 }
 
 void loop() {
