@@ -66,12 +66,14 @@ void Task1code( void * pvParameters ) {
   display.setTextAlignment(TEXT_ALIGN_CENTER);
   display.drawString(64, 20, "CONNECTED...");
   display.display();
+
   vTaskDelay(1000);
 
   time1 = millis();
   state = analogRead(readPin);
   for (;;) {
     if ((analogRead(readPin) - state) > 80) {
+
       digitalWrite(ledPin, HIGH);
       period = millis() - time1;
       velo = (uint16_t)averageArr((uint16_t)(60000 / (uint16_t)period), arr);
@@ -87,32 +89,36 @@ void Task1code( void * pvParameters ) {
       if (counter % 5 == 0) {
         veloTemp = velo;
       }
-//      if (veloTemp > 300) {
-//        digitalWrite(5, HIGH);
-//      }
-//      else {
-//        digitalWrite(5, LOW);
-//      }
-        if(velo < calibVelo -20 || velo > calibVelo + 20) {
-          digitalWrite(5,HIGH);
-        }
-        else{
-          digitalWrite(5,LOW);
-        }
-      vTaskDelay(120);
+      //      if (veloTemp > 300) {
+      //        digitalWrite(5, HIGH);
+      //      }
+      //      else {
+      //        digitalWrite(5, LOW);
+      //      }
+      if (velo < calibVelo - 20 || velo > calibVelo + 20) {
+        digitalWrite(5, HIGH);
+      }
+      else {
+        digitalWrite(5, LOW);
+      }
       digitalWrite(ledPin, LOW);
-      if (((analogRead(readPin) > (200 + state)) || analogRead(readPin) < (state - 200)) && counter % 5 ==0) {
+      
+      vTaskDelay(120);
+      if (((analogRead(readPin) > (100 + state)) || analogRead(readPin) < (state - 100)) &&counter%4==0) {
         state = analogRead(readPin);
       }
     }
     if (analogRead(readPin) <  state - 500) {
+      vTaskDelay(500);
       state = analogRead(readPin);
     }
-
+    if (analogRead(readPin) >  state + 400) {
+      state = analogRead(readPin);
+    }
     if (millis() - time1 > 5000 && counter != 0 ) {
       stt = false;
       display.setTextAlignment(TEXT_ALIGN_CENTER);
-      display.drawString(64, 0, "Warning");
+      display.drawString(64, 15, "Warning");
       display.display();
 
       if ( (unsigned long)(millis() - timeTemp1) > 300 )
@@ -132,7 +138,7 @@ void Task1code( void * pvParameters ) {
       display.clear();
     }
   }
-  
+
 }
 
 
@@ -155,17 +161,26 @@ void Task2code( void * pvParameters ) {
   firebaseData.setResponseSize(1024);
   json1.clear().add(("count"), counter);
   Firebase.updateNode(firebaseData, path , json1);
-  for(;;){
-  if (millis() - time3 > 5000) {
-    json1.add(("count"), counter);
-    json1.add(("time"), time2);
-    json1.add(("velo"), velo);
-    Firebase.updateNode(firebaseData, path , json1);
-    json1.clear();
-    Firebase.getInt(firebaseDataGet, path + "/calibVelo");
-    calibVelo = firebaseDataGet.intData();
-    time3 = millis();
-  }
+  for (;;) {
+    if (millis() - time3 > 5000) {
+      if(stt==true){
+        json1.add(("stt"), stt);      }
+      
+      json1.add(("count"), counter);
+      json1.add(("time"), time2);
+      json1.add(("velo"), velo);
+      Firebase.updateNode(firebaseData, path , json1);
+      json1.clear();
+      Firebase.getInt(firebaseDataGet, path + "/calibVelo");
+      calibVelo = firebaseDataGet.intData();
+      time3 = millis();
+    }
+    if(stt!=true){
+            json1.add(("stt"), stt);
+            Firebase.updateNode(firebaseData, path , json1);
+      Firebase.updateNode(firebaseData, path , json1);
+      json1.clear();
+    }
   }
 }
 void loop () {
